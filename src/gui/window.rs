@@ -4,6 +4,8 @@ use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::Sdl;
 
+use crate::core::screen::Screen;
+
 const SCREEN_WIDTH: u32 = 64;
 const SCREEN_HEIGHT: u32 = 32;
 const PIXEL_SIZE: u32 = 10;
@@ -32,12 +34,12 @@ impl Gui {
         Ok(Gui { canvas })
     }
 
-    pub fn draw_screen(&mut self, screen: &[[bool; 64]; 32]) {
+    pub fn draw_screen(&mut self, screen: &Screen) {
         self.canvas.set_draw_color(OFF_COLOR);
         self.canvas.clear();
 
         self.canvas.set_draw_color(ON_COLOR);
-        for (y, row) in screen.iter().enumerate() {
+        for (y, row) in screen.pixels.iter().enumerate() {
             for (x, &pixel) in row.iter().enumerate() {
                 if pixel {
                     let rect = Rect::new(

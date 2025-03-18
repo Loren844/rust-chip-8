@@ -1,4 +1,4 @@
-use crate::display::font::FONT;
+use crate::core::font::FONT;
 
 pub struct Memory {
     pub ram: [u8; 4096], //écrire a partir de 200 (0x16)
@@ -15,8 +15,8 @@ impl Memory {
         return self.ram[pc as usize];
     }
 
-    pub fn load_rom(&mut self, rom :Vec<u8>) {
-        let mut pointer:usize = 0x200;
+    pub fn load_rom(&mut self, rom: Vec<u8>) {
+        let mut pointer: usize = 0x200;
         for instruction in rom {
             self.ram[pointer] = instruction;
             pointer += 1;
