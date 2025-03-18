@@ -55,4 +55,8 @@ impl Gui {
 
         self.canvas.present();
     }
+
+    pub fn quit(&mut self) {
+        std::process::exit(0)
+    }
 }
