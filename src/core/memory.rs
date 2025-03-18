@@ -14,4 +14,13 @@ impl Memory {
     pub fn get_instruction(&mut self, pc: u16) -> u8 {
         return self.ram[pc as usize];
     }
+
+    pub fn load_rom(&mut self, rom :Vec<u8>) {
+        let mut pointer:usize = 0x200;
+        for instruction in rom {
+            self.ram[pointer] = instruction;
+            pointer += 1;
+        }
+        println!("ROM chargée !");
+    }
 }

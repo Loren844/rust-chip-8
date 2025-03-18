@@ -15,7 +15,7 @@ impl Cpu {
         Cpu {
             memory: Memory::new(),
             timers: Timers::new(),
-            program_counter: 0x16,
+            program_counter: 0x200,
             stack: [0; 16],
             index_register: 0,
             v_registers: [0; 16],
