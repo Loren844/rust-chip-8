@@ -7,8 +7,8 @@ use sdl2::Sdl;
 const SCREEN_WIDTH: u32 = 64;
 const SCREEN_HEIGHT: u32 = 32;
 const PIXEL_SIZE: u32 = 10;
-const OFF_COLOR:Color = Color::RGB(153, 107, 2);
-const ON_COLOR:Color = Color::RGB(255, 209, 0);
+const OFF_COLOR: Color = Color::RGB(0, 0, 0);
+const ON_COLOR: Color = Color::RGB(255, 255, 255);
 
 pub struct Gui {
     canvas: Canvas<Window>,
@@ -17,7 +17,12 @@ pub struct Gui {
 impl Gui {
     pub fn new(sdl_context: &Sdl) -> Result<Self, String> {
         let video_subsystem = sdl_context.video()?;
-        let window = video_subsystem.window("CHIP-8 Emulator", SCREEN_WIDTH * PIXEL_SIZE, SCREEN_HEIGHT * PIXEL_SIZE)
+        let window = video_subsystem
+            .window(
+                "CHIP-8 Emulator",
+                SCREEN_WIDTH * PIXEL_SIZE,
+                SCREEN_HEIGHT * PIXEL_SIZE,
+            )
             .position_centered()
             .build()
             .map_err(|e| e.to_string())?;

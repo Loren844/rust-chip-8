@@ -1,7 +1,7 @@
-mod cpu;
+mod core;
 mod display;
 
-use crate::cpu::memory::Memory;
+use crate::core::memory::Memory;
 use crate::display::screen::Screen;
 
 fn main() {

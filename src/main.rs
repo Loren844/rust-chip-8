@@ -1,45 +1,52 @@
-mod gui;
+mod core;
 mod display;
+mod gui;
 
+use core::cpu::Cpu;
 use display::screen::Screen;
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
-use std::time::Duration;
-use gui::window::Gui;
 
 fn main() -> Result<(), String> {
-    let sdl_context = sdl2::init()?;
-    let mut gui = Gui::new(&sdl_context)?;
+    let mut cpu: Cpu = Cpu::new();
+    let mut screen: Screen = Screen::new();
+    loop {
+        //fetch
+        let instruction: u16 = cpu.read_instruction();
 
-    let mut screen:Screen = Screen::new();
+        //decode
+        let first_nibble: u16 = instruction >> 12;
+        let x = (instruction >> 8) & 0xF;
+        let y = (instruction >> 4) & 0xF;
+        let n = instruction & 0xF;
+        let nn = (instruction & 0xFF) as u8;
+        let nnn = instruction & 0xFFF;
 
-    let mut event_pump = sdl_context.event_pump()?;
-    let mut cpt_x:usize = 0;
-    let mut cpt_y:usize = 0;
-
-    'running: loop {
-        for event in event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. } | Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                    break 'running;
-                }
+        match first_nibble {
+            0 => match x {
+                0 => match y {
+                    0xE => match n {
+                        0 => screen.clear(),
+                        _ => {}
+                    },
+                    _ => {}
+                },
                 _ => {}
-            }
+            },
+            1 => cpu.program_counter = nnn,
+            2 => {}
+            3 => {}
+            4 => {}
+            5 => {}
+            6 => cpu.v_registers[x as usize] = nn,
+            7 => cpu.v_registers[x as usize] += nn,
+            8 => {}
+            9 => {}
+            0xA => cpu.index_register = nnn,
+            0xB => {}
+            0xC => {}
+            0xD => {}
+            0xE => {}
+            0xF => {}
+            _ => {}
         }
-
-        screen.swap(cpt_x, cpt_y);
-        cpt_x+=1;
-
-        if cpt_x > 63 {
-            cpt_x = 0;
-            cpt_y+=1;
-        };
-        if cpt_y > 31 {cpt_y = 0;}
-    
-
-        gui.draw_screen(&screen.pixels);
-        std::thread::sleep(Duration::from_millis(16)); // ~60 FPS
     }
-
-    Ok(())
 }
