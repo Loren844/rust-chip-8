@@ -4,11 +4,15 @@ mod gui;
 
 use core::cpu::Cpu;
 use display::screen::Screen;
+use std::{thread::sleep, time};
 
 fn main() -> Result<(), String> {
     let mut cpu: Cpu = Cpu::new();
     let mut screen: Screen = Screen::new();
     loop {
+        //show the screen
+        screen.draw();
+
         //fetch
         let instruction: u16 = cpu.read_instruction();
 
@@ -48,5 +52,6 @@ fn main() -> Result<(), String> {
             0xF => {}
             _ => {}
         }
+        sleep(time::Duration::from_millis(5))
     }
 }

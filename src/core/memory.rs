@@ -8,7 +8,6 @@ impl Memory {
     pub fn new() -> Self {
         let mut ram: [u8; 4096] = [0; 4096];
         ram[0x050..0x0A0].copy_from_slice(&FONT);
-
         Memory { ram }
     }
 
