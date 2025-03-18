@@ -1,6 +1,12 @@
 # rust-chip-8
 A Chip-8 emulator in rust
 
+## Specificities 
+- 🚫 The `0NNN` instruction is not implemented because it executes machine code specific to the original CHIP-8 processors (COSMAC VIP, ETI-660), which is irrelevant for a modern emulator.
+
+## Missing features
+- For the moment, the original COSMAC VIP mode is not available but it will be in a next release !
+
 ## Resources
 ### Rust Documentation
 - [The Rust Programming Language](https://doc.rust-lang.org/book/)

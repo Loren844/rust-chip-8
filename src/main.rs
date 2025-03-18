@@ -13,7 +13,6 @@ use std::{thread::sleep, time};
 fn main() -> Result<(), String> {
     let mut chip8: Chip8 = Chip8::new();
     let mut path = String::new();
-
     //selection de la ROM
     while path.trim().is_empty() {
         println!("Saisissez le chemin d'accès vers la ROM :");
@@ -50,7 +49,8 @@ fn main() -> Result<(), String> {
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => {
-                    break; // Quitter la boucle proprement
+                    gui.quit();
+                    break;
                 }
                 _ => {}
             }
