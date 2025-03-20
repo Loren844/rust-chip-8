@@ -8,6 +8,7 @@ use utils::loader::load_rom;
 
 use sdl2::event::Event;
 use std::io;
+use std::time::{Duration, Instant};
 use std::{thread::sleep, time};
 
 fn main() -> Result<(), String> {
@@ -30,6 +31,8 @@ fn main() -> Result<(), String> {
         }
     }
 
+    let mut last_timer_update = Instant::now();
+
     let sdl_context = sdl2::init()?;
     let mut gui = Gui::new(&sdl_context)?;
     let mut event_pump = sdl_context.event_pump()?;
@@ -40,7 +43,7 @@ fn main() -> Result<(), String> {
         let instruction: u16 = chip8.read_instruction();
 
         //decode and execute
-        chip8.decode_and_execute(instruction);
+        chip8.decode_and_execute(instruction, &event_pump);
 
         //show screen
         gui.draw_screen(&chip8.screen);
@@ -54,6 +57,10 @@ fn main() -> Result<(), String> {
                 }
                 _ => {}
             }
+        }
+        if last_timer_update.elapsed() >= Duration::from_millis(16) {
+            chip8.timers.update();
+            last_timer_update = Instant::now();
         }
         sleep(time::Duration::from_millis(16))
     }

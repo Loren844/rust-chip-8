@@ -31,11 +31,11 @@ impl Screen {
         SCREEN_HEIGHT as u8
     }
 
-    pub fn draw(&self) {
+    pub fn _draw(&self) {
         for y in 0..SCREEN_HEIGHT {
             for x in 0..SCREEN_WIDTH {
                 match self.get_pixel(x, y) {
-                    true => print!("■■"), // 
+                    true => print!("■■"), //
                     false => print!("  "),
                 }
             }

@@ -1,9 +1,11 @@
+use crate::core::keypad::u8_to_scancode;
 use crate::core::memory::Memory;
 use crate::core::screen::Screen;
 use crate::core::stack::Stack;
 use crate::core::timers::Timers;
 
 use rand::Rng;
+use sdl2::EventPump;
 
 pub struct Chip8 {
     pub memory: Memory,
@@ -36,7 +38,8 @@ impl Chip8 {
         return ((b1 as u16) << 8) | (b2 as u16);
     }
 
-    pub fn decode_and_execute(&mut self, instruction: u16) {
+    pub fn decode_and_execute(&mut self, instruction: u16, event_pump: &EventPump) {
+        let keys = event_pump.keyboard_state();
         //decode
         let first_nibble: u16 = instruction >> 12;
         let x = (instruction >> 8) & 0xF;
@@ -78,7 +81,7 @@ impl Chip8 {
                 }
             }
             6 => self.v_registers[x as usize] = nn as u8,
-            7 => self.v_registers[x as usize] += nn as u8,
+            7 => self.v_registers[x as usize] = self.v_registers[x as usize].wrapping_add(nn as u8),
             8 => {
                 match n {
                     0 => self.v_registers[x as usize] = self.v_registers[y as usize],
@@ -95,7 +98,8 @@ impl Chip8 {
                             self.v_registers[x as usize] ^ self.v_registers[y as usize]
                     }
                     4 => {
-                        self.v_registers[x as usize] += self.v_registers[y as usize];
+                        self.v_registers[x as usize] =
+                            self.v_registers[x as usize].wrapping_add(self.v_registers[y as usize]);
                         if self.v_registers[x as usize] >= 255 {
                             self.v_registers[0xF] = 1
                         } else {
@@ -103,12 +107,13 @@ impl Chip8 {
                         }
                     }
                     5 => {
-                        if self.v_registers[x as usize] > self.v_registers[y as usize] {
-                            self.v_registers[0xF] = 1
-                        } else if self.v_registers[x as usize] < self.v_registers[y as usize] {
-                            self.v_registers[0xF] = 0
+                        if self.v_registers[x as usize] >= self.v_registers[y as usize] {
+                            self.v_registers[0xF] = 1;
+                        } else {
+                            self.v_registers[0xF] = 0;
                         }
-                        self.v_registers[x as usize] -= self.v_registers[y as usize];
+                        self.v_registers[x as usize] =
+                            self.v_registers[x as usize].wrapping_sub(self.v_registers[y as usize]);
                     }
                     6 => {
                         //self.v_registers[x as usize] = self.v_registers[y as usize]; COSMAC VIP
@@ -118,12 +123,12 @@ impl Chip8 {
                     }
                     7 => {
                         if self.v_registers[x as usize] > self.v_registers[y as usize] {
-                            self.v_registers[0xF] = 1
-                        } else if self.v_registers[x as usize] < self.v_registers[y as usize] {
                             self.v_registers[0xF] = 0
+                        } else if self.v_registers[x as usize] <= self.v_registers[y as usize] {
+                            self.v_registers[0xF] = 1
                         }
                         self.v_registers[x as usize] =
-                            self.v_registers[y as usize] - self.v_registers[x as usize];
+                            self.v_registers[y as usize].wrapping_sub(self.v_registers[x as usize]);
                     }
                     0xE => {
                         //self.v_registers[x as usize] = self.v_registers[y as usize]; COSMAC VIP
@@ -174,12 +179,57 @@ impl Chip8 {
                     }
                 }
             }
-            0xE => match y {
-                9 => {}
-                0xA => {}
+            0xE => {
+                let key = u8_to_scancode(self.v_registers[x as usize]).unwrap();
+                match y {
+                    9 => {
+                        if keys.is_scancode_pressed(key) {
+                            self.program_counter += 2;
+                        }
+                    }
+                    0xA => {
+                        if keys.is_scancode_pressed(key) {
+                            self.program_counter += 2;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            0xF => match nn {
+                0x07 => self.v_registers[x as usize] = self.timers.delay_timer,
+                0x15 => self.timers.delay_timer = self.v_registers[x as usize],
+                0x18 => self.timers.sound_timer = self.v_registers[x as usize],
+                0x1E => self.index_register += self.v_registers[x as usize] as u16,
+                0x0A => {
+                    if let Some(scancode) = keys.pressed_scancodes().next() {
+                        self.v_registers[x as usize] = scancode as u8;
+                    } else {
+                        self.program_counter -= 2;
+                    }
+                }
+                0x29 => self.index_register = 0x050 + (self.v_registers[x as usize] * 5) as u16,
+                0x33 => {
+                    let num = self.v_registers[x as usize];
+                    self.memory.ram[self.index_register as usize] = num / 100;
+                    self.memory.ram[(self.index_register + 1) as usize] = num % 100 / 10;
+                    self.memory.ram[(self.index_register + 2) as usize] = num % 10;
+                }
+                0x55 => {
+                    for i in 0..x + 1 {
+                        self.memory.ram[(self.index_register + i) as usize] =
+                            self.v_registers[i as usize]
+                        //self.index_register += 1 COSMAC VIP et enlever le + i evidemment
+                    }
+                }
+                0x65 => {
+                    for i in 0..x + 1 {
+                        self.v_registers[i as usize] =
+                            self.memory.ram[(self.index_register + i) as usize];
+                        //self.index_register += 1 COSMAC VIP et enlever le + i evidemment
+                    }
+                }
                 _ => {}
             },
-            0xF => {}
             _ => {}
         }
     }
