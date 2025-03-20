@@ -40,6 +40,7 @@ impl Chip8 {
 
     pub fn decode_and_execute(&mut self, instruction: u16, event_pump: &EventPump) {
         let keys = event_pump.keyboard_state();
+        println!("{:#X}", instruction);
         //decode
         let first_nibble: u16 = instruction >> 12;
         let x = (instruction >> 8) & 0xF;
